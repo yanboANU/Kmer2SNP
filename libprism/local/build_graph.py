@@ -57,8 +57,8 @@ def snp_edges(uniqKmers, k, left_index, right_index, extendKmers):
                 '''    
                 ek1, ek2, supportPair, flag = extend_one_pair(k1, k2, left_index, right_index, k)
                 if flag:
-                    edges.append( (k1, k2, supportPair*3) )
-    extendKmers[ (k1,k2) ] = (ek1, ek2)                
+                    edges.append( (k1, k2, supportPair) )
+                    extendKmers[ (k1,k2) ] = (ek1, ek2)                
     print ("kmer cannot find pair number", count1)      
     print ("snp edges number", len(edges))       
     return edges 
@@ -164,12 +164,13 @@ def build_map_merge(left, k):
                     #mappedKmer.add(k2)
                     #break #3 lines add 22 Aug. a kmer only allow one kmer hamming distance equal to 2
     
-    # for debug, can be deleted            
     highRepeat = set()
+    '''
     for key in hisMap:
         if hisMap[key] > 2:
             highRepeat.add(key)
     print ("high Repeat kmer number", len(highRepeat) )
+    '''
     return mapMerge, highRepeat
 
 def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extendKmers):
@@ -189,9 +190,11 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                 Rmin2 = min(Right2, tools.reverse(Right2))
                 covL1, covL2 = kmerCov[Lmin1], kmerCov[Lmin2]
                 covR1, covR2 = kmerCov[Rmin1], kmerCov[Rmin2]
+                '''
                 if (Lmin1 in highRepeat or Lmin2 in highRepeat or
                         Rmin1 in highRepeat or Rmin2 in highRepeat):
                     continue
+                '''    
                 if covL1 > 1.5*covR1 or 1.5*covL1 < covR1:
                     continue
                 if covL2 > 1.5*covR2 or 1.5*covL2 < covR2:
@@ -202,11 +205,11 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                     if Lmin1 < Rmin1:
                         ek1, ek2, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
                         if flagL:
-                            edges.append( (Lmin1, Lmin2, supportPairL*2) )
+                            edges.append( (Lmin1, Lmin2, supportPairL) )
                     else:        
                         ek1, ek2, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
                         if flagR:
-                            edges.append( (Rmin1, Rmin2, supportPairR*2) )
+                            edges.append( (Rmin1, Rmin2, supportPairR) )
                     
                 elif Left1[-l:] == Right1[:l] and Left2[-l:] == Right2[:l]:
                     merge1 = Left1 + Right1[l:]
@@ -214,11 +217,11 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                     if Lmin1 < Rmin1:
                         ek1, ek2, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
                         if flagL:
-                            edges.append( (Lmin1, Lmin2, supportPairL*2) )
+                            edges.append( (Lmin1, Lmin2, supportPairL) )
                     else:        
                         ek1, ek2, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
                         if flagR:
-                            edges.append( (Rmin1, Rmin2, supportPairR*2) ) 
+                            edges.append( (Rmin1, Rmin2, supportPairR) ) 
                 else:
                     continue #print ("one side")
                  
@@ -227,9 +230,16 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                 #if merge1[1:] == merge2[:-1] or merge1[:-1]==merge2[1:]:
                 #    print (merge1, merge2)
                 #    continue
-                small1, small2 = tools.get_smaller_pair_kmer(merge1, merge2) 
-                extendKmers[(Lmin1, Lmin2)] = (small1, small2)
-                extendKmers[(Rmin1, Rmin2)] = (small1, small2)
+                small1, small2 = tools.get_smaller_pair_kmer(merge1, merge2)
+                if Lmin1 < Lmin2:
+                    extendKmers[(Lmin1, Lmin2)] = (small1, small2)
+                else:
+                    extendKmers[(Lmin2, Lmin1)] = (small1, small2)
+
+                if Rmin1 < Rmin2:
+                    extendKmers[(Rmin1, Rmin2)] = (small1, small2)
+                else:
+                    extendKmers[(Rmin2, Rmin1)] = (small1, small2)
     return edges 
 
 
