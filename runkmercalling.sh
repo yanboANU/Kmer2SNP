@@ -20,16 +20,16 @@ echo $1 $2 $3 $4 $5 $6
 start=`date +%s`
 
 if [ ! -f "chr$1_k$2.txt" ]; then 
-	/home/yanbo/software/dsk/build/bin/dsk -nb-cores 2 -file $5 -histo 1 -out chr$1_k$2 -kmer-size $2
-	/home/yanbo/software/dsk/build/bin/dsk2ascii -nb-cores 2 -file chr$1_k$2 -out chr$1_k$2.txt
+	/home/yulin/software/dsk/build/bin/dsk -nb-cores 10 -file $5 -histo 1 -out chr$1_k$2 -kmer-size $2
+	/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr$1_k$2 -out chr$1_k$2.txt
 
-	/home/yanbo/software/dsk/build/bin/dsk -nb-cores 2 -file $5 -histo 1 -out chr$1_k$3 -kmer-size $3
-	/home/yanbo/software/dsk/build/bin/dsk2ascii -nb-cores 2 -file chr$1_k$3 -out chr$1_k$3.txt
+	#/home/yulin/software/dsk/build/bin/dsk -nb-cores 2 -file $5 -histo 1 -out chr$1_k$3 -kmer-size $3
+	#/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 2 -file chr$1_k$3 -out chr$1_k$3.txt
 fi
 
 if [ ! -f "hete.peak.k$2" ]; then 
 	#findGSE:
-	Rscript /home/yanbo/software/VariationCalling/libprism/local/runfindGSE.r chr$1_k$2.histo $2 ./ $4 >hete.peak.k$2
+	Rscript /home/yulin/software/VariationCalling/libprism/local/runfindGSE.r chr$1_k$2.histo $2 ./ $4 >hete.peak.k$2
 fi
 
 left=`cat hete.peak.k$2 | grep "het_xfit_left" | awk '{print $6}'`
@@ -39,8 +39,8 @@ echo $right
 
 #python /home/yanbo/software/Kmer2SNP/variationCalling.py --t1 chr$1_k$2.txt --t2 chr$1_k$3.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
 
-#python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.txt --t2 chr$1_k$3.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
-python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.uniq.kmer --t2 chr$1_k$3.uniq.kmer --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
+python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.txt --t2 chr$1_k$3.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
+#python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.uniq.kmer --t2 chr$1_k$3.uniq.kmer --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
 
 
 end=`date +%s`

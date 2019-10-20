@@ -165,19 +165,20 @@ def build_map_merge(left, k):
                     #break #3 lines add 22 Aug. a kmer only allow one kmer hamming distance equal to 2
     
     highRepeat = set()
-    '''
     for key in hisMap:
-        if hisMap[key] > 2:
+        if hisMap[key] > 5: # rule 
             highRepeat.add(key)
+            
     print ("high Repeat kmer number", len(highRepeat) )
-    '''
     return mapMerge, highRepeat
 
 def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extendKmers):
     edges = []
     for (key1, key2) in mapMerge:
         mlen = len( mapMerge [ (key1, key2) ] )
-        if mlen > 2 or mlen==1: # one key only allow a pair
+        #if mlen > 2 or mlen==1: # one key only allow a pair
+        #    continue
+        if mlen == 1:
             continue
         for i in range(mlen-1):
             for j in range(i+1, mlen):
@@ -190,46 +191,59 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                 Rmin2 = min(Right2, tools.reverse(Right2))
                 covL1, covL2 = kmerCov[Lmin1], kmerCov[Lmin2]
                 covR1, covR2 = kmerCov[Rmin1], kmerCov[Rmin2]
-                '''
+                 
+                # rule  
                 if (Lmin1 in highRepeat or Lmin2 in highRepeat or
                         Rmin1 in highRepeat or Rmin2 in highRepeat):
                     continue
-                '''    
+                
+                # rule
                 if covL1 > 1.5*covR1 or 1.5*covL1 < covR1:
                     continue
                 if covL2 > 1.5*covR2 or 1.5*covL2 < covR2:
                     continue
+         
                 if Right1[-l:] == Left1[:l] and Right2[-l:] == Left2[:l]:
                     merge1 = Right1 + Left1[l:]
                     merge2 = Right2 + Left2[l:]
-                    if Lmin1 < Rmin1:
-                        ek1, ek2, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
-                        if flagL:
-                            edges.append( (Lmin1, Lmin2, supportPairL) )
-                    else:        
-                        ek1, ek2, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
-                        if flagR:
-                            edges.append( (Rmin1, Rmin2, supportPairR) )
+                    # rule
+                    if merge1[1:] == merge2[:-1] or merge1[:-1]==merge2[1:]:
+                        print (merge1, merge2)
+                        continue
+                    ek1L, ek2L, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
+                    ek1R, ek2R, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
+                    if flagL and flagR:
+                        p1 = tools.hamming_distance2(ek1L, ek2L)
+                        p2 = tools.hamming_distance2(ek1R, ek2R)
+                        #print (Lmin1, Lmin2, ek1L, ek2L, supportPairL, p1)
+                        #print (Rmin1, Rmin2, ek1R, ek2R, supportPairR, p2)
+                        #if p1[0] > k/2 and p2[0] > k/2 and len(ek1L)-p1[1] > k/2 and len(ek1R)-p2[1] > k/2:
+                        # make sure support pairs between non pair are exists
+                        edges.append( (Lmin1, Lmin2, supportPairL) )
+                        edges.append( (Rmin1, Rmin2, supportPairR) )
                     
                 elif Left1[-l:] == Right1[:l] and Left2[-l:] == Right2[:l]:
                     merge1 = Left1 + Right1[l:]
                     merge2 = Left2 + Right2[l:]
-                    if Lmin1 < Rmin1:
-                        ek1, ek2, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
-                        if flagL:
-                            edges.append( (Lmin1, Lmin2, supportPairL) )
-                    else:        
-                        ek1, ek2, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
-                        if flagR:
-                            edges.append( (Rmin1, Rmin2, supportPairR) ) 
+                    # rule   
+                    if merge1[1:] == merge2[:-1] or merge1[:-1]==merge2[1:]:
+                        print (merge1, merge2)
+                        continue
+                    ek1L, ek2L, supportPairL, flagL = extend_one_pair(Lmin1, Lmin2, left_index, right_index, k)
+                    ek1R, ek2R, supportPairR, flagR = extend_one_pair(Rmin1, Rmin2, left_index, right_index, k)
+                    if flagL and flagR:
+                        p1 = tools.hamming_distance2(ek1L, ek2L)
+                        p2 = tools.hamming_distance2(ek1R, ek2R)
+                        #print (Lmin1, Lmin2, ek1L, ek2L, supportPairL, p1)
+                        #print (Rmin1, Rmin2, ek1R, ek2R, supportPairR, p2)
+                        #if p1[0] > k/2 and p2[0] > k/2 and len(ek1L)-p1[1] > k/2 and len(ek1R)-p2[1] > k/2:
+                        edges.append( (Lmin1, Lmin2, supportPairL) )
+                        edges.append( (Rmin1, Rmin2, supportPairR) ) 
                 else:
                     continue #print ("one side")
                  
                 #TTTTTTTTTTTTTTTCAAAAAAAAAAAAAAAA # also useful SNP and indel 
                 #TTTTTTTTTTTTTTTTCAAAAAAAAAAAAAAA 
-                #if merge1[1:] == merge2[:-1] or merge1[:-1]==merge2[1:]:
-                #    print (merge1, merge2)
-                #    continue
                 small1, small2 = tools.get_smaller_pair_kmer(merge1, merge2)
                 if Lmin1 < Lmin2:
                     extendKmers[(Lmin1, Lmin2)] = (small1, small2)
@@ -353,10 +367,9 @@ def extend_to_right(h1, left_index, right_index, k, group):
                 Rtemp = Rtemp[1:]
             break
     return temp, add
-   
-def extend_one_pair(h1, h2, left_index, right_index, k):
 
-    flag = True
+def init_groups(h1,h2,k):
+
     group1, group2 = [], []
     if len(h1) == k: 
         group1.append(h1)
@@ -372,40 +385,61 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
         for i in range(lenh2-k+1):
             k2temp = h2[i:i+k]
             group2.append(min(k2temp, tools.reverse(k2temp) ) )
-    supportPair = 0
+
+    return group1, group2
+   
+def extend_one_pair(h1, h2, left_index, right_index, k):
+
+    flag = True
+    supportPairL, supportPairR = 0, 0
+    group1, group2 = init_groups(h1, h2, k)
     temp1, add1 = extend_to_left(h1, left_index, right_index, k, group1)
     temp2, add2 = extend_to_left(h2, left_index, right_index, k, group2)
     minL = min ( len(add1), len(add2) )
     for i in range(1, minL+1):
         if add1[0-i] == add2[0-i]:
-            supportPair = supportPair + 1
+            supportPairL = supportPairL + 1
+        else:
+            break
+
     
-    # some TP add content shift one position equal 
-    if minL!= 0 and add1[-minL:] != add2[-minL:]: # exist but conflict
+    if minL!= 0 and add1[-minL:] != add2[-minL:]: #rule exist but conflict
         flag = False    
         if minL == int(k/2) and tools.hamming_distance(add1, add2) == 1:
             flag = True    
+ 
+    minTemp = min( len(temp1), len(temp2)  )
+    temp1, temp2 = temp1[-minTemp:], temp2[-minTemp:]
     
     ekmer1, add1R = extend_to_right(temp1, left_index, right_index, k, group1)
     ekmer2, add2R = extend_to_right(temp2, left_index, right_index, k, group2) 
+    
+    if flag == False:
+        return ekmer1, ekmer2, 0, flag
+
     minR = min ( len(add1R), len(add2R) )
     for i in range(minR):
         if add1R[i] == add2R[i]:
-            supportPair = supportPair + 1
-
-    if minR!=0 and add1R[0:minR] != add2R[0:minR]: # exist but conflict
+            supportPairR = supportPairR + 1
+        else:
+            break
+    
+    if minR!=0 and add1R[0:minR] != add2R[0:minR]: # rule exist but conflict
         flag = False
         # the distance of two snps larger than k/2 smaller than k    
         if minR == int(k/2) and tools.hamming_distance(add1R, add2R) == 1:
             flag = True
-    if supportPair <= 2:
+
+    minTemp = min( len(ekmer1), len(ekmer2)  )
+    ekmer1, ekmer2 = ekmer1[:minTemp], ekmer2[:minTemp]    
+    if supportPairL < 1 or supportPairR < 1: # rule, at least one side one support
         flag = False
     #if max(minL, minR) <= 2: 
-        #flag = False
+    #    flag = False
     #if min(minL, minR) <= threshold:
         #flag = False
      
-    return ekmer1, ekmer2, supportPair, flag
+    return ekmer1, ekmer2, min(supportPairL, supportPairR), flag
 
 def extend_pair(hetePairs, left_index, right_index, k):
     extendPair, extendSet = [], set()

@@ -5,10 +5,7 @@
 # Created Time: Thu 09 May 2019 11:51:38 AEST
 #########################################################################
 #!/bin/bash
-
 import sys
-#from libprism.local 
-import tools
 
 def read_kmer(filename):
     pair_kmer = []
@@ -20,15 +17,16 @@ def read_kmer(filename):
 
 
 if len(sys.argv) < 2:
-    print ("real.31mer find.31mer")
+    print ("hete/homo/repeat.31mer uniq.31mer")
     sys.exit()
 
 realFile=sys.argv[1]
-pairFile=sys.argv[2]
+#uniqFile="/home/yulin/bio/VariationCalling/experiment/Simulate/30x_30x/kmercalling/K31/sorted_uniq_kmer"
+uniqFile=sys.argv[2]
 
 #print ("input %s %s" % (realFile, pairFile) )
 list2 = read_kmer(realFile)
-list4 = read_kmer(pairFile)
+list4 = read_kmer(uniqFile)
 
 intersection=[]
 index2, index4=0,0
@@ -39,10 +37,10 @@ foutTP=open("TPPair", "w") #real SNP, not found
 
 
 while index2 < len2 and index4 < len4:
-    if (list2[index2][0:2] < list4[index4][0:2]):
-        foutTN.write( "%s %s\n" % (list2[index2][0], list2[index2][1] ) )
+    if (list2[index2][0:1] < list4[index4][0:1]):
+        foutTN.write( "%s\n" % (list2[index2][0]) )
         index2 +=1
-    elif list2[index2][0:2] > list4[index4][0:2]:   
+    elif list2[index2][0:1] > list4[index4][0:1]:   
         #foutFP.write( "%s %s %s %s\n" % ( list4[index4][0], list4[index4][1], list4[index4][2], list4[index4][3] ) )
         #foutFP.write( "%s %s " % ( list4[index4][0], list4[index4][1] ) )
         #if len(list4[index4]) >= 2:
@@ -53,7 +51,7 @@ while index2 < len2 and index4 < len4:
             foutFP.write( "%s " % ( ele ) )    
         foutFP.write( "\n" )
         index4 +=1
-    elif list2[index2][0:2] == list4[index4][0:2]:
+    elif list2[index2][0:1] == list4[index4][0:1]:
 
         #foutTP.write( "%s %s " % ( list4[index4][0], list4[index4][1] ) )
         #if len(list4[index4]) >= 4:
