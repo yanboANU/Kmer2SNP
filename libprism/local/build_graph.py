@@ -30,7 +30,7 @@ def pick_smaller_unique_kmer(input_filename, low, high):
     return uniqKmer
 
 # hamming distance = 1
-def snp_edges(uniqKmers, k, left_index, right_index, extendKmers):   
+def snp_edges(uniqKmers, k, left_index, right_index, extendKmers, slabel):   
 
     edges, m = [], {}
     mid = int(k/2)
@@ -41,7 +41,8 @@ def snp_edges(uniqKmers, k, left_index, right_index, extendKmers):
             m[key] = []
         m[key].append( kmer )
     print ("total number possible pair kmer", len(m))    
-    count1 =0 
+    count1 = 0
+    fout = open('snp_edges', "w")
     for key in m:
         mKeyLen = len(m[key])
         if mKeyLen == 1:
@@ -58,7 +59,20 @@ def snp_edges(uniqKmers, k, left_index, right_index, extendKmers):
                 ek1, ek2, supportPair, flag = extend_one_pair(k1, k2, left_index, right_index, k)
                 if flag:
                     edges.append( (k1, k2, supportPair) )
-                    extendKmers[ (k1,k2) ] = (ek1, ek2)                
+                    extendKmers[ (k1,k2) ] = (ek1, ek2)              
+                    
+                    if k1 < k2:
+                        fout.write("%s %s %s\n" % (k1, k2, supportPair) )
+                    else:
+                        fout.write("%s %s %s\n" % (k2, k1, supportPair) )
+                       
+                else:
+                    if k1 < k2:
+                        fout.write("%s %s %s\n" % (k1, k2, 0) )
+                    else:
+                        fout.write("%s %s %s\n" % (k2, k1, 0) )
+                        
+    fout.close()                
     print ("kmer cannot find pair number", count1)      
     print ("snp edges number", len(edges))       
     return edges 
@@ -165,10 +179,12 @@ def build_map_merge(left, k):
                     #break #3 lines add 22 Aug. a kmer only allow one kmer hamming distance equal to 2
     
     highRepeat = set()
+
+     
     for key in hisMap:
         if hisMap[key] > 5: # rule 
             highRepeat.add(key)
-            
+    
     print ("high Repeat kmer number", len(highRepeat) )
     return mapMerge, highRepeat
 
@@ -257,7 +273,7 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
     return edges 
 
 
-def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers):
+def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers, slabel):
 
     mid = int(k/2)
     left = {}
@@ -402,38 +418,40 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
         else:
             break
 
-    
+    ''' 
     if minL!= 0 and add1[-minL:] != add2[-minL:]: #rule exist but conflict
         flag = False    
         if minL == int(k/2) and tools.hamming_distance(add1, add2) == 1:
             flag = True    
- 
+    '''
     minTemp = min( len(temp1), len(temp2)  )
     temp1, temp2 = temp1[-minTemp:], temp2[-minTemp:]
     
     ekmer1, add1R = extend_to_right(temp1, left_index, right_index, k, group1)
     ekmer2, add2R = extend_to_right(temp2, left_index, right_index, k, group2) 
-    
+    ''' 
     if flag == False:
         return ekmer1, ekmer2, 0, flag
-
+    '''
     minR = min ( len(add1R), len(add2R) )
     for i in range(minR):
         if add1R[i] == add2R[i]:
             supportPairR = supportPairR + 1
         else:
             break
-    
+    '''    
     if minR!=0 and add1R[0:minR] != add2R[0:minR]: # rule exist but conflict
         flag = False
         # the distance of two snps larger than k/2 smaller than k    
         if minR == int(k/2) and tools.hamming_distance(add1R, add2R) == 1:
             flag = True
-
+    '''
     minTemp = min( len(ekmer1), len(ekmer2)  )
-    ekmer1, ekmer2 = ekmer1[:minTemp], ekmer2[:minTemp]    
+    ekmer1, ekmer2 = ekmer1[:minTemp], ekmer2[:minTemp]   
+    '''
     if supportPairL < 1 or supportPairR < 1: # rule, at least one side one support
         flag = False
+    '''    
     #if max(minL, minR) <= 2: 
     #    flag = False
     #if min(minL, minR) <= threshold:
