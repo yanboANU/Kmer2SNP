@@ -7,33 +7,24 @@
 To download **Kmer2SNP**, you have to install the following software
 <pre><code>
 (1) DSK: 
-
+https://github.com/GATB/dsk
 (2) findGSE: 
-first install dependencies required by findGSE under R
-R
-install.packages("pracma")
-install.packages("fGarch")
-q("no")
+https://github.com/schneebergerlab/findGSE
+(3) Python package networkx
+https://networkx.github.io/documentation/networkx-1.11/install.html
 
-wget https://github.com/schneebergerlab/findGSE/archive/master.zip
-unzip master.zip
-tar -czvf findGSE-master.tar.gz findGSE-master/
-R
-install.packages("findGSE-master.tar.gz")
-q("no")
-
-</code></pre>
-
+  
 Then clone the **Kmer2SNP** repository to your machine.
-<pre><code> git clone https://github.com/yanboANU/ </code></pre>
+<pre><code> git clone https://github.com/yanboANU/Kmer2SNP </code></pre>
 
 # Input Format
 
-The input of **Kmer2SNP**  
+The input of **Kmer2SNP**  can be fasta, fastq, either gzipped or not. 
+
 # Example Usage
 
-<pre><code>  </code></pre>
+<pre><code>  sh runkmercalling.sh k cov single_chr22_30x_data.fq  </code></pre>
 
- 
+K is the size of k-mer, cov is reads coverage.
 
 # References
