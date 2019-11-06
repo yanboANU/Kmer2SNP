@@ -16,12 +16,12 @@ echo "\$1:kmer-size \$2:homo coverage \$3:input.fq"
 echo $1 $2 $3
 
 if [ ! -f "chr_k$1.txt" ]; then 
-	/home/yulin/software/dsk/build/bin/dsk -nb-cores 10 -file $3 -histo 1 -out chr_k$1 -kmer-size $1
-	/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr_k$1 -out chr_k$1.txt
+	/path2dsk/dsk/build/bin/dsk -nb-cores 10 -file $3 -histo 1 -out chr_k$1 -kmer-size $1
+	/path2dsk/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr_k$1 -out chr_k$1.txt
 fi
 
 if [ ! -f "hete.peak.k$1" ]; then 
-	Rscript /home/yanbo/software/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2 >hete.peak.k$1
+	Rscript /path2Kmer2SNP/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2 >hete.peak.k$1
 fi
 
 if [ -f "hete.peak.k$1" ]; then
@@ -36,8 +36,8 @@ fi
 echo $left
 echo $right
 
-command="/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log"
+command="python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log"
 echo $command
-/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log
+python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log
 
 
