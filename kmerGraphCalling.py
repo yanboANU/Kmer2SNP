@@ -25,7 +25,6 @@ args = parser.parse_args()
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 #############################################################################
-time1 = time.clock()
 lowCov, highCov = int(args.c1), int(args.c2)
 k = int(args.k)
 extendLen = 1 
@@ -37,25 +36,17 @@ logging.info("heterozygous kmer coverage range %s %s" % (lowCov, highCov))
 kmerCov = kmercalling.pick_smaller_unique_kmer( args.t1, 
            lowCov, highCov)
 
-time2 = time.clock()
 
 logging.info( "picked heterozygous Kmer number: %s" % len(kmerCov) )
-logging.info( "finish reading (kmer coverage) file, cost %.2f seconds" % (time2-time1))
 left_index, right_index = kmercalling.build_left_right_kmer_index(kmerCov)
 edges = []
 extendKmers = {}
 edges.extend( build_graph.snp_edges(kmerCov, k, left_index, right_index, extendKmers) )
-time3 = time.clock()
-logging.info( "add snp edges, cost %.2f second" % (time3 - time2) )
 
 edges.extend( build_graph.non_snp_edges(kmerCov, k, left_index, right_index, extendKmers) )
-time4 = time.clock()
-logging.info( "add non snp edges, cost %.2f second" % (time4 - time3) )
 
 G=nx.Graph()
 G.add_weighted_edges_from(edges)
-time6 = time.clock()
-logging.info( "build graph, cost %.2f seconds" % (time6 - time4) )
 logging.info("number of components: %s" % nx.number_connected_components(G) )
 
 
@@ -91,10 +82,6 @@ for g in graphs:
         if w not in weightDis:
             weightDis[w] = 0            
         weightDis[w] += 1
-
-
-time8 = time.clock()
-logging.info( "compute max weight matching, cost %.2f seconds" % (time8 - time6) )
 
 
 sortedWeightDis = sorted(weightDis.items())
