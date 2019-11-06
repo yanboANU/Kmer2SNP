@@ -33,6 +33,6 @@ k_31_pair.non stores the result after merge two non-isolated SNP kmer pair.
 
 <pre><code>  sh runkmercalling.sh 31 60 single_chr22_60x_data.fq  </code></pre>
 
-31 is the size of k-mer,  60 is reads coverage (or homozygous coverage ) .
+31 is the size of k-mer,  60 is reads coverage (or homozygous coverage ), single_chr22_60x_data.fq is reads fastq file.
 
 
