@@ -37,5 +37,25 @@ with open(sys.argv[1]) as f:
         count += 1 
 
 print snp_sen[0], "&", snp_pre[0], "&", snp_TP, "&", snp_find-snp_TP, "&", snp_true-snp_TP
+print snp_sen[0], "&", snp_pre[0], "&", round(2*snp_sen[0]*snp_pre[0]/(snp_sen[0] + snp_pre[0]), 2)
+
+f1 = []
+l = len(snp_sen)
+for i in range(l):
+    temp = round(2*snp_sen[i]*snp_pre[i]/(snp_sen[i] + snp_pre[i]), 2)
+    f1.append(temp)
+
+print snp_sen
+print snp_pre
+print f1
+
+
+'''
+for ele in snp_sen:
+    print ele,
+print 
+for ele in snp_pre:
+    print ele,
+'''    
 #print indel_sen
 #print indel_pre

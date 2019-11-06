@@ -68,10 +68,10 @@ def get_snp_pair_kmer(vcfFilename):
             h1Pre, h2Pre, h1Suf, h2Suf = h1[:k], h2[:k], h1[-k:], h2[-k:]
             smallerH1P, smallerH2P = tools.get_smaller_pair_kmer(h1Pre, h2Pre)
             smallerH1S, smallerH2S = tools.get_smaller_pair_kmer(h1Suf, h2Suf)
-            if smallerH1P <= smallerH1S:
-                nonSeps.append( (smallerH1P, smallerH2P, key, after) )
-            else:
-                nonSeps.append( (smallerH1S, smallerH2S, key, after) )
+            #if smallerH1P <= smallerH1S:
+            nonSeps.append( (smallerH1P, smallerH2P, key, after) )
+            #else:
+            nonSeps.append( (smallerH1S, smallerH2S, key, after) )
 
 
             i += 1
@@ -209,15 +209,20 @@ foutAll.close()
 if len(sys.argv) < 2:
     print ("chrID kmer size")
     sys.exit()
+
+#path=/home/yulin/bio/VariationCalling/data/
+#path=/home/yanbo/bio/Kmer2SNP/data/HG002
+
 #NA12878
-refFilename="/home/yulin/bio/Data/reference/NCBI36_hg18/chr"+ sys.argv[1] +".fa"
-snpVCFFile="/home/yulin/bio/VariationCalling/data/NA12878/VCF/NA12878_hg18_snp_VCFs/chr" +sys.argv[1] + ".vcf"
-indelVCFFile="/home/yulin/bio/VariationCalling/data/NA12878/VCF/NA12878_hg18_indel_VCFs/chr"+ sys.argv[1] +".vcf"
-        
+#refFilename="/home/yulin/bio/Data/reference/NCBI36_hg18/chr"+ sys.argv[1] +".fa"
+#snpVCFFile="/home/yulin/bio/VariationCalling/data/NA12878/VCF/NA12878_hg18_snp_VCFs/chr" +sys.argv[1] + ".vcf"
+#indelVCFFile="/home/yulin/bio/VariationCalling/data/NA12878/VCF/NA12878_hg18_indel_VCFs/chr"+ sys.argv[1] +".vcf"
+       
 #HG002
-#refFilename="/home/yulin/bio/VariationCalling/data/HG002/GRCh38_reference/chr"+ sys.argv[1] +".fa"
-#snpVCFFile="/home/yulin/bio/VariationCalling/data/HG002/HG002_GRCh38_snp_VCFs/chr" +sys.argv[1] + ".vcf"
-#indelVCFFile="/home/yulin/bio/VariationCalling/data/HG002/HG002_GRCh38_indel_VCFs/chr"+ sys.argv[1] +".vcf"
+#refFilename="/home/yulin/bio/Data/reference/GRCh38_hg38/chr"+ sys.argv[1] +".fa"
+refFilename="/home/yanbo/bio/Kmer2SNP/data/HG002/GRCh38_reference/chr"+ sys.argv[1] +".fa"
+snpVCFFile="/home/yanbo/bio/Kmer2SNP/data/HG002/HG002_GRCh38_snp_VCFs/chr" +sys.argv[1] + ".vcf"
+indelVCFFile="/home/yanbo/bio/Kmer2SNP/data/HG002/HG002_GRCh38_indel_VCFs/chr"+ sys.argv[1] +".vcf"
         
 
 record = SeqIO.read(open(refFilename), "fasta")
@@ -225,6 +230,8 @@ print (record.id)
 seq = str(record.seq).upper()
 seqLen = len(seq)
 k=int(sys.argv[2])
+print(snpVCFFile)
 get_snp_pair_kmer(snpVCFFile)
+print(indelVCFFile)
 get_indel_pair_kmer(indelVCFFile)
 

@@ -34,49 +34,36 @@ intersection=[]
 index2, index4=0,0
 len2, len4 = len(list2), len(list4)
 foutFP=open("FPPair", "w") #not real SNP, but found
-foutTN=open("TNPair", "w") #real SNP, not found
+#foutTN=open("TNPair", "w") #real SNP, not found
 foutTP=open("TPPair", "w") #real SNP, not found
 
 
 while index2 < len2 and index4 < len4:
     if (list2[index2][0:2] < list4[index4][0:2]):
-        foutTN.write( "%s %s\n" % (list2[index2][0], list2[index2][1] ) )
+        #foutTN.write( "%s %s\n" % (list2[index2][0], list2[index2][1] ) )
         index2 +=1
     elif list2[index2][0:2] > list4[index4][0:2]:   
-        #foutFP.write( "%s %s %s %s\n" % ( list4[index4][0], list4[index4][1], list4[index4][2], list4[index4][3] ) )
-        #foutFP.write( "%s %s " % ( list4[index4][0], list4[index4][1] ) )
-        #if len(list4[index4]) >= 2:
-            #foutFP.write( "%s %s \n" % ( list4[index4][2], list4[index4][3] ) )
-        #else:
-            #foutFP.write( "\n" )
         for ele in list4[index4]:
             foutFP.write( "%s " % ( ele ) )    
         foutFP.write( "\n" )
         index4 +=1
     elif list2[index2][0:2] == list4[index4][0:2]:
-
-        #foutTP.write( "%s %s " % ( list4[index4][0], list4[index4][1] ) )
-        #if len(list4[index4]) >= 4:
-            #foutTP.write( "%s %s \n" % ( list4[index4][2], list4[index4][3] ) )
-        #else:
-            #foutTP.write( "\n" )
         for ele in list4[index4]:
             foutTP.write( "%s " % ( ele ) )    
         foutTP.write( "\n" )
-
         intersection.append( list4[index4] )
         index2 +=1
         index4 +=1
     else: 
-        print "unknow"
-        print list2[index2]
-        print list4[index4]
+        print ("unknow")
+        print (list2[index2])
+        print (list4[index4])
         index2 +=1
         index4 +=1
 
 foutTP.close()        
 foutFP.close()
-foutTN.close()
+#foutTN.close()
 #print "real pair kmer number, find pair kmer number, intersection pair kmer number"
 len_inter = len(intersection)   
 #print len2, len4, len_inter

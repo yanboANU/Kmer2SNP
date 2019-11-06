@@ -28,6 +28,7 @@ faFile = sys.argv[2]
 k = int(sys.argv[3])
 mid = int(k/2)
 
+nonSepSnpFile = "non_sep_snp_" + str(k) + "mer_pair_kmer"
 nonSnpFile = "non_snp_" + str(k) + "mer_pair_kmer"
 snpFile = "snp_" + str(k) + "mer_pair_kmer"
 indelFile = "indel_" + str(k)  + "mer_pair_kmer"
@@ -100,6 +101,8 @@ def updata_one_heterozygous_pair(s1, s2, pos, seq, snpPairKmer, indelPairKmer):
             i+=1
 
     elif len(s1) == 2 and len(s2) == 1:   # vcf pos record correct but s1 and s2 not correct
+        if pos-(mid-1) < 0 or pos+(mid+2) >= len(seq):
+            return
         kmer1 = seq[pos-(mid-1):pos+(mid+2)]
         kmer2 = seq[pos-(mid-1):pos+1] + seq[pos+2:pos+(mid+2)]
         assert len(kmer1) + len(kmer2) == 2*k - 1
@@ -134,11 +137,18 @@ def updata_non(s1_1, s2_1, pos_1, s1_2, s2_2, pos_2, seq, nonPairKmer):
     kmer2 = seq[pos_1-mid:pos_1] + s2_1.upper() + seq[pos_1+1:pos_2] + s2_2.upper() + seq[pos_2+1:pos_2+mid+1]
     smallerKmer1, smallerKmer2 = tools.get_smaller_pair_kmer(kmer1, kmer2)
     nonPairKmer.add( (smallerKmer1, smallerKmer2) )
+
+    h1Pre, h2Pre, h1Suf, h2Suf = kmer1[:k], kmer2[:k], kmer1[-k:], kmer2[-k:]
+    smallerH1P, smallerH2P = tools.get_smaller_pair_kmer(h1Pre, h2Pre)
+    smallerH1S, smallerH2S = tools.get_smaller_pair_kmer(h1Suf, h2Suf)
+    nonSepPairKmer.add( (smallerH1P, smallerH2P) )
+    nonSepPairKmer.add( (smallerH1S, smallerH2S) )
     return
 
 snpPairKmer = set()
 indelPairKmer = set()
 nonPairKmer = set()
+nonSepPairKmer = set()
 
 for record in SeqIO.parse(faFile, "fasta"):
     ID = record.id.split('|')[0] 
@@ -218,3 +228,8 @@ for (kmer1, kmer2) in sortedNonPairKmer:
     nonOUT.write("%s %s\n" % (kmer1, kmer2) )
 nonOUT.close()
 
+sortedNonSepPairKmer = sorted(nonSepPairKmer)
+nonSepOUT = open(nonSepSnpFile, "w")
+for (kmer1, kmer2) in sortedNonSepPairKmer:
+    nonSepOUT.write("%s %s\n" % (kmer1, kmer2) )
+nonSepOUT.close()

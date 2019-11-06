@@ -16,6 +16,7 @@ def read_kmer(filename):
     return pair_kmer      
 
 
+#/home/yulin/bio/VariationCalling/data/NA12878/reference
 if len(sys.argv) < 2:
     print ("hete/homo/repeat.31mer uniq.31mer")
     sys.exit()

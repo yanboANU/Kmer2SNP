@@ -6,6 +6,7 @@
 #########################################################################
 #!/bin/bash
 from libprism.local import tools
+#import tools
 
 def read_snp_sam(filename):
     #bothHappen, oneHappen, zeroHappen = 0, 0, 0

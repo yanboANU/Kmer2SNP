@@ -39,6 +39,8 @@ filterCov = sys.argv[2]
 k = int(sys.argv[3])
 #inFile = "output.5.snp"
 mid = int(k/2)
+
+nonSepSnpFile = "nonSep_snp_"+ str(k) +"mer_cov" + filterCov + "_pair_kmer"
 nonIsoSnpFile = "nonIso_snp_"+ str(k) +"mer_cov" + filterCov + "_pair_kmer"
 snpFile = "snp_" + str(k) + "mer_cov" + filterCov + "_pair_kmer"
 indelFile = "indel_"+ str(k) + "mer_cov"+ filterCov +"_pair_kmer"
@@ -86,7 +88,7 @@ with open(inFile, "r") as f:
 #print snpPairKmer
 #print indelPairKmer
 print ( "total snp number:", len(snpPairKmer) )
-nonIsol, isol = set(), set()
+nonSep, nonIsol, isol = set(), set(), set()
 
 for key in snpPairKmer:
     m = snpPairKmer[key]
@@ -115,6 +117,12 @@ for key in snpPairKmer:
                     #assert len(kmer1) + len(kmer2) == 2*k
                     k1, k2 = tools.get_smaller_pair_kmer(kmer1, kmer2)
                     nonIsol.add( (k1, k2))#, cov0, cov1) )
+
+                    h1Pre, h2Pre, h1Suf, h2Suf = kmer1[:k], kmer2[:k], kmer1[-k:], kmer2[-k:]
+                    smallerH1P, smallerH2P = tools.get_smaller_pair_kmer(h1Pre, h2Pre)
+                    smallerH1S, smallerH2S = tools.get_smaller_pair_kmer(h1Suf, h2Suf)
+                    nonSep.add( (smallerH1P, smallerH2P) )
+                    nonSep.add( (smallerH1S, smallerH2S) )
     #else:
         #print ("a cluter more than 2 choice", len(m))
         '''
@@ -138,11 +146,18 @@ snpOUT.close()
 print ( "non-isolated snp number:", len(nonIsol) )
 sortedKmer = sorted(list(nonIsol))
 nonOUT = open(nonIsoSnpFile, "w")
-#for (kmer1, kmer2, c1, c2) in sortedKmer:
-    #nonOUT.write("%s %s %s %s\n" % (kmer1, kmer2, c1, c2) )
 for (kmer1, kmer2) in sortedKmer:
     nonOUT.write("%s %s\n" % (kmer1, kmer2) )
 nonOUT.close()
+
+
+
+print ( "non-isolated sep snp number:", len(nonIsol) )
+sortedKmer = sorted(list(nonSep))
+nonSepOUT = open(nonSepSnpFile, "w")
+for (kmer1, kmer2) in sortedKmer:
+    nonSepOUT.write("%s %s\n" % (kmer1, kmer2) )
+nonSepOUT.close()
 
 
 print ( "indel number", len(indelPairKmer) )
@@ -201,8 +216,8 @@ for key in indelPairKmer:
                 indels.add( (small1, small2) )
             i+=1
         
-    else:
-        print ("a cluter more than 2 choice, indel", len(m))
+    #else:
+        #print ("a cluter more than 2 choice, indel", len(m))
 
 print ("delete in second sequence", countb, "delete in first sequence", countf)
 print ( "indel pair number", len(indels) )
