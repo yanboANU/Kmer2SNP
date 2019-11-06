@@ -30,11 +30,11 @@ def pick_smaller_unique_kmer(input_filename, low, high):
     return uniqKmer
 
 # hamming distance = 1
-def snp_edges(uniqKmers, k, left_index, right_index, extendKmers, slabel):   
+def snp_edges(uniqKmers, k, left_index, right_index, extendKmers):   
 
     edges, m = [], {}
     mid = int(k/2)
-    print ("unique kmer number", len(uniqKmers))        
+    print ("heterozygous kmer number", len(uniqKmers))        
     for kmer in uniqKmers:
         key= kmer[:mid] + kmer[mid+1:]
         if key not in m:
@@ -42,7 +42,7 @@ def snp_edges(uniqKmers, k, left_index, right_index, extendKmers, slabel):
         m[key].append( kmer )
     print ("total number possible pair kmer", len(m))    
     count1 = 0
-    fout = open('snp_edges', "w")
+    #fout = open('snp_edges', "w")
     for key in m:
         mKeyLen = len(m[key])
         if mKeyLen == 1:
@@ -60,21 +60,21 @@ def snp_edges(uniqKmers, k, left_index, right_index, extendKmers, slabel):
                 if flag:
                     edges.append( (k1, k2, supportPair) )
                     extendKmers[ (k1,k2) ] = (ek1, ek2)              
-                    
+                '''
                     if k1 < k2:
                         fout.write("%s %s %s\n" % (k1, k2, supportPair) )
                     else:
-                        fout.write("%s %s %s\n" % (k2, k1, supportPair) )
-                       
+                        fout.write("%s %s %s\n" % (k2, k1, supportPair) )  
                 else:
                     if k1 < k2:
                         fout.write("%s %s %s\n" % (k1, k2, 0) )
                     else:
                         fout.write("%s %s %s\n" % (k2, k1, 0) )
+                '''        
                         
-    fout.close()                
+    #fout.close()                
     print ("kmer cannot find pair number", count1)      
-    print ("snp edges number", len(edges))       
+    print ("potential isolated snp kmer pair number", len(edges))       
     return edges 
     
 
@@ -165,8 +165,6 @@ def build_map_merge(left, k):
                 if cnt == k and dis == 1:
                     key1, key2 = k1[ diffPos - mid : ] , k2[ diffPos - mid : ]
                     mink1, mink2 = tools.get_smaller_pair_kmer(k1, k2)
-                    #fout.write("%s %s %s %s\n" % (mink1, mink2, cov1, cov2) )
-                    #candidateNonPair.append((mink1, mink2))
                     if mink1 not in hisMap:
                         hisMap[mink1] = 0
                     if mink2 not in hisMap:
@@ -174,18 +172,13 @@ def build_map_merge(left, k):
                     hisMap[mink1] += 1
                     hisMap[mink2] += 1
                     update_map_merge(left[key][i], left[key][j], key1, key2, mapMerge)
-                    #mappedKmer.add(k1)
-                    #mappedKmer.add(k2)
-                    #break #3 lines add 22 Aug. a kmer only allow one kmer hamming distance equal to 2
     
-    highRepeat = set()
-
-     
+    highRepeat = set() 
     for key in hisMap:
-        if hisMap[key] > 5: # rule 
+        if hisMap[key] > 5: # rule: if a kmer relate to too many k-mer, ignore those kmer 
             highRepeat.add(key)
     
-    print ("high Repeat kmer number", len(highRepeat) )
+    #print ("high Repeat kmer number", len(highRepeat) )
     return mapMerge, highRepeat
 
 def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extendKmers):
@@ -273,7 +266,7 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
     return edges 
 
 
-def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers, slabel):
+def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers):
 
     mid = int(k/2)
     left = {}
@@ -288,9 +281,9 @@ def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers, slabel):
             left[ leftKey ] = []  
         left[leftKey].append( (Rkmer) )
     
-    print ("left size", len(left) )
+    #print ("left size", len(left) )
     mapMerge, highRepeat = build_map_merge(left, k)
-    print ("map Merge size", len(mapMerge) )
+    #print ("map Merge size", len(mapMerge) )
     edges = merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extendKmers) 
     '''
     print ("non pair size", len(nonPair) )
@@ -301,7 +294,7 @@ def non_snp_edges(kmerCov, k, left_index, right_index, extendKmers, slabel):
         fout.write("%s %s %s %s %s %s %s %s\n" % (k1,k2,ek1,ek2,c1,c2,c3,c4) )
     fout.close()        
     '''
-    print ("non snp edges number", len(edges))       
+    print ("potential non isolated snp kmer pair number", len(edges))       
     return edges
 
 

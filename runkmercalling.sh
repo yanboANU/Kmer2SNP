@@ -6,62 +6,38 @@
 #########################################################################
 #!/bin/bash
 set -e
-#cd $$3x/chr$1/
-#mkdir kmercalling
-#cd kmercalling
 
-if [ $# != 6 ]; then
-	echo "\$1:chrID \$2:k \$3:k-1 \$4:hom cov \$5:*fq \$6: NGS/TGS "
+if [ $# != 3 ]; then
+	echo "\$1:kmer-size \$2:homo coverage \$3:input.fq"
 	exit 
 fi	
 
-echo "\$1:chrID \$2:k \$3:k-1 \$4:hom cov \$5:*fq \$6: NGS/TGS"
-echo $1 $2 $3 $4 $5 $6
-start=`date +%s`
+echo "\$1:kmer-size \$2:homo coverage \$3:input.fq"
+echo $1 $2 $3
 
-if [ ! -f "chr$1_k$2.txt" ]; then 
-	/home/yulin/software/dsk/build/bin/dsk -nb-cores 10 -file $5 -histo 1 -out chr$1_k$2 -kmer-size $2
-	/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr$1_k$2 -out chr$1_k$2.txt
-
-	#/home/yulin/software/dsk/build/bin/dsk -nb-cores 2 -file $5 -histo 1 -out chr$1_k$3 -kmer-size $3
-	#/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 2 -file chr$1_k$3 -out chr$1_k$3.txt
-fi
-#exec echo hello
-if [ "$6" = "1" ]; then
-	left=8
-    right=24
-elif [ ! -f "hete.peak.k$2" ]; then 
-	#findGSE:
-	Rscript /home/yulin/bio/VariationCalling/libprism/local/runfindGSE.r chr$1_k$2.histo $2 ./ $4 >hete.peak.k$2
+if [ ! -f "chr_k$1.txt" ]; then 
+	/home/yulin/software/dsk/build/bin/dsk -nb-cores 10 -file $3 -histo 1 -out chr_k$1 -kmer-size $1
+	/home/yulin/software/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr_k$1 -out chr_k$1.txt
 fi
 
-if [ -f "hete.peak.k$2" ]; then
-	left=`cat hete.peak.k$2 | grep "het_xfit_left" | awk '{print $6}'`
-	right=`cat hete.peak.k$2 | grep "het_xfit_right" | awk '{print $6}'`
+if [ ! -f "hete.peak.k$1" ]; then 
+	Rscript /home/yanbo/software/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2 >hete.peak.k$1
 fi
 
-if [ -f "chr$1_k$2.h5" ]; then 
-    rm chr$1_k$2.h5
+if [ -f "hete.peak.k$1" ]; then
+	left=`cat hete.peak.k$1 | grep "het_xfit_left" | awk '{print $6}'`
+	right=`cat hete.peak.k$1 | grep "het_xfit_right" | awk '{print $6}'`
+fi
+
+if [ -f "chr_k$1.h5" ]; then 
+    rm chr_k$1.h5
 fi
 
 echo $left
 echo $right
 
-#python /home/yanbo/software/Kmer2SNP/variationCalling.py --t1 chr$1_k$2.txt --t2 chr$1_k$3.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
-
-command="/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log"
+command="/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log"
 echo $command
-#/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.txt --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
-/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr$1_k$2.uniq.kmer --c1 $left --c2 $right --k $2 --b $6 >vc_k$2.log
+/home/yulin/py36/bin/python3 /home/yanbo/software/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log
 
-
-end=`date +%s`
-runtime=$((end-start))
-echo run $runtime seconds
-##hour=$(echo "$runtime/3600" | bc)
-##echo run $hour hours
-#ret=$?; times; exit "$ret"
-##trap times EXIT
-#bash -c 'trap times EXIT; : {1..1000000}'
-#zsh -c 'trap times EXIT; : {1..1000000}'
 

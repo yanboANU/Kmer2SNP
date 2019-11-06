@@ -14,7 +14,7 @@ from libprism.local import tools
 
 def pick_smaller_unique_kmer(input_filename, low, high):
     uniqKmer = {}
-    fout = open(input_filename.split('.')[0] + ".uniq.kmer" ,"w") 
+    #fout = open(input_filename.split('.')[0] + ".uniq.kmer" ,"w") 
     with open(input_filename, "r") as f:
         for line in f:
             words = line.strip().split()
@@ -27,8 +27,8 @@ def pick_smaller_unique_kmer(input_filename, low, high):
                 kmer = newkmer
             #uniqKmer.append( (kmer, coverage) )
             uniqKmer[kmer] = coverage
-            fout.write("%s %s\n" % (kmer, coverage))
-    fout.close()        
+            #fout.write("%s %s\n" % (kmer, coverage))
+    #fout.close()        
     return uniqKmer
 
 # hamming distance = 1
