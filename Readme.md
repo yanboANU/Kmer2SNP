@@ -12,7 +12,7 @@ https://github.com/GATB/dsk
 https://github.com/schneebergerlab/findGSE/blob/master/INSTALL
 (3) Python package networkx
 https://networkx.github.io/documentation/networkx-1.11/install.html
-
+ </code></pre>
   
 Then clone the **Kmer2SNP** repository to your machine.
 <pre><code> git clone https://github.com/yanboANU/Kmer2SNP.git </code></pre>
