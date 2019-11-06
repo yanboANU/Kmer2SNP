@@ -9,13 +9,13 @@ To download **Kmer2SNP**, you have to install the following software
 (1) DSK: 
 https://github.com/GATB/dsk
 (2) findGSE: 
-https://github.com/schneebergerlab/findGSE
+https://github.com/schneebergerlab/findGSE/blob/master/INSTALL
 (3) Python package networkx
 https://networkx.github.io/documentation/networkx-1.11/install.html
 
   
 Then clone the **Kmer2SNP** repository to your machine.
-<pre><code> git clone https://github.com/yanboANU/Kmer2SNP </code></pre>
+<pre><code> git clone https://github.com/yanboANU/Kmer2SNP.git </code></pre>
 
 # Input Format
 
