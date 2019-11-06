@@ -26,13 +26,13 @@ The input of **Kmer2SNP**  can be fasta, fastq, either gzipped or not.
 # Ouput Format
 
 See Kmer2SNP/example, k_31_pair.snp stores isolated SNP kmer pair, k_31_pair.non and k_31_pair.non.sep store non-isolated SNP kmer pair. 
-k_31_pair.non.sep put one SNP in the middle position and length of kmer pair is 31+31 if you set k=31. 
-k_31_pair.non store the result after merge two non-isolated SNP kmer pair. 
+k_31_pair.non.sep puts one SNP in the middle position. 
+k_31_pair.non stores the result after merge two non-isolated SNP kmer pair. 
 
 # Example Usage
 
-<pre><code>  sh runkmercalling.sh k cov single_chr22_30x_data.fq  </code></pre>
+<pre><code>  sh runkmercalling.sh 31 60 single_chr22_60x_data.fq  </code></pre>
 
-K is the size of k-mer, cov is reads coverage.
+31 is the size of k-mer,  60 is reads coverage (or homozygous coverage ) .
 
 
