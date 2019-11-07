@@ -100,11 +100,11 @@ for i in range(1,l-2):
     if deleta[i] < deleta[i-1] and deleta[i] < deleta[i+1]:
         weightThreshold = sortedWeightDis[i+1][0] 
         break
-    '''
+    
     if deleta[i] < 0:
         weightThreshold = sortedWeightDis[i][0] 
         break
-    '''    
+    
 
 logging.info("weight threshold %s" % weightThreshold)   
 for (ele1, ele2) in selectedMates:
