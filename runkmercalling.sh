@@ -8,7 +8,7 @@
 set -e
 
 if [ $# != 3 ]; then
-	echo "\$1:kmer-size \$2:homo coverage \$3:input.fq"
+	echo "\$1:kmer-size \$2:homo coverage \$3:input.fq[,input2.fq][,input3.fq]"
 	exit 
 fi	
 
