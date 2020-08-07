@@ -20,8 +20,8 @@ if [ ! -f "chr_k$1.txt" ]; then
 	/path2dsk/dsk/build/bin/dsk2ascii -nb-cores 10 -file chr_k$1 -out chr_k$1.txt
 fi
 
-if [ ! -f "hete.peak.k$1" ]; then 
-	Rscript /path2Kmer2SNP/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2 >hete.peak.k$1
+if [ ! -f "hete.peak.k$1" ]; then
+	out=$(Rscript /path2Kmer2SNP/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2) && echo "$out" > hete.peak.k$1
 fi
 
 if [ -f "hete.peak.k$1" ]; then
