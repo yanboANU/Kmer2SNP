@@ -24,6 +24,9 @@ if [ ! -f "hete.peak.k$1" ]; then
 	out=$(Rscript /path2Kmer2SNP/Kmer2SNP/libprism/local/runfindGSE.r chr_k$1.histo $1 ./ $2) && echo "$out" > hete.peak.k$1
 fi
 
+heteRate=`cat v1*txt | grep "Het_rate" | awk '{print $2}'`
+echo "heterozygous rate is" $heteRate
+
 if [ -f "hete.peak.k$1" ]; then
 	left=`cat hete.peak.k$1 | grep "het_xfit_left" | awk '{print $6}'`
 	right=`cat hete.peak.k$1 | grep "het_xfit_right" | awk '{print $6}'`
@@ -36,8 +39,8 @@ fi
 echo $left
 echo $right
 
-command="python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log"
+command="python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 --r $heteRate >vc_k$1.log"
 echo $command
-python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 >vc_k$1.log
-
+python3 /path2Kmer2SNP/Kmer2SNP/kmerGraphCalling.py --t1 chr_k$1.txt --c1 $left --c2 $right --k $1 --r $heteRate >vc_k$1.log
+#rm chr$1_k$2.txt
 

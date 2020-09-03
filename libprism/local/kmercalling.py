@@ -10,11 +10,11 @@ import os
 import sys
 import time
 from libprism.local import tools
+import logging
 #from tools import *
 
 def pick_smaller_unique_kmer(input_filename, low, high):
     uniqKmer = {}
-    #fout = open(input_filename.split('.')[0] + ".uniq.kmer" ,"w") 
     with open(input_filename, "r") as f:
         for line in f:
             words = line.strip().split()
@@ -25,152 +25,52 @@ def pick_smaller_unique_kmer(input_filename, low, high):
             newkmer = tools.reverse(kmer)
             if kmer > newkmer:    
                 kmer = newkmer
-            #uniqKmer.append( (kmer, coverage) )
-            uniqKmer[kmer] = coverage
-            #fout.write("%s %s\n" % (kmer, coverage))
-    #fout.close()        
+            val = tools.transfer_kmer_int(kmer) 
+            uniqKmer[ val ] = coverage
+    logging.debug("uniqKmer memory %s bytes" % (sys.getsizeof(uniqKmer)) )
     return uniqKmer
 
-# hamming distance = 1
-def find_snp_pair_kmer(uniqKmers, k, left_index, right_index):    
-    m={}
-    mid = int(k/2)
-    print ("before build mapK")
-    for kmer in uniqKmers:
-        #Rkmer = tools.reverse(kmer) # these two lines 
-        #assert Rkmer >= kmer        # can be deleted  
-        key= kmer[:mid] + kmer[mid+1:]
-        if key not in m:
-            m[key] = []
-        m[key].append( kmer )
-    print ("after build mapK")
-    print ("unique kmer number", len(uniqKmers))        
-    print ("total number possible pair kmer", len(m))    
-    pairKmers = []
-    count1, countLarge2 =0, 0
-    usedKmers = []
-    for key in m:
-        mKeyLen = len(m[key])
-        if mKeyLen == 1:
-            count1 += 1
-        elif mKeyLen == 2:
-            k1, k2 = m[key][0], m[key][1]
-            cov1, cov2 = uniqKmers[k1], uniqKmers[k2]
-            if k1[1:] == k2[:-1] or k1[:-1]==k2[1:]:
-                print (k1, k2)
-                continue
-            # if you want to find more, don't use this
-            # use this, find less but high accuracy
-            ek1, ek2, flag, group1, group2 = extend_one_pair(k1, k2, left_index, right_index,k, 0)
-            #print "group size", len(group1), len(group2)
-            #print group1, group2
-            #sys.exit()
-            if flag == False:
-                continue
-            usedKmers.extend( group1 )
-            usedKmers.extend( group2 )
-            if k1 < k2:
-                pairKmers.append( (k1, k2, ek1, ek2, cov1, cov2) )
-            else:
-                pairKmers.append( (k2, k1, ek2, ek1, cov2, cov1) )
+
+def build_index(uniqKmer, k):
+    
+    left_index , right_index = {}, {}
+    m_index = {} # remove middle index 
+    count = 0
+    filterLKey = set()
+    filterRKey = set()
+
+    for intkmer in iter(uniqKmer):
+        binarykmer = bin(intkmer)[2:].zfill(k*2) 
+        
+        key = int(binarykmer[:k-1] + binarykmer[k+1:], 2)
+        if key not in m_index:
+            m_index[key] = []
+        m_index[key].append( intkmer )
+    
+        key = int(binarykmer[:-2], 2)
+        if key not in left_index:
+            left_index[ key  ] = int(binarykmer[-2:], 2) #intkmer #int(binarykmer[-2:]) # intkmer
         else:
-            countLarge2 += 1
-    
-    print ("kmer cannot find pair number", count1)       
-    print ("more than one mutation in middle", countLarge2) 
-    fout = open("snp_pair", "w")
-    sortedKmers = sorted(pairKmers)
-    ID = 1
-    #leftKmer = uniqKmers
-    for (k1, k2, ek1, ek2, c1, c2) in sortedKmers:   
-        #assert (k1, c1) in uniqKmers
-        #assert (k1, c1) in leftKmer
-        fout.write("%s %s %s %s %s %s\n" % (k1, k2, ek1, ek2, c1, c2))
-    fout.close()       
+            filterLKey.add(key)
+        
+        key = int(binarykmer[2:], 2)
+        if key not in right_index:
+            right_index[ key ] = int(binarykmer[:2], 2) #intkmer #int(binarykmer[:2]) # intkmer
+        else:
+            filterRKey.add(key)
 
-    print ("for snp, used kmer number", len(usedKmers))
-    return m, sortedKmers, set(uniqKmers)-set(usedKmers)
-    
+    for key in iter(filterLKey):
+        left_index.pop(key)
+    for key in iter(filterRKey):
+        right_index.pop(key)
+
+    logging.debug( "left_index Memory %s bytes " % ( sys.getsizeof(left_index) ) )
+    logging.debug( "right_index Memory %s bytes " % ( sys.getsizeof(right_index) ) )
+    logging.debug( "m_index Memory %s bytes " % (sys.getsizeof(m_index) ) )
+    return left_index, right_index, m_index
+
 
 '''
-print ("before filter mapK")
-uniqMapK = {}
-for key in mapK:
-    for (kmer, cov) in mapK[key]:
-        leftHalf = kmer[:mid]
-        rightHalf = kmer[mid+1:]
-        if (tools.hamming_distance(rightHalf, kmer[mid : -1 ] ) <= 1 or # mutation => delete 
-                tools.hamming_distance(leftHalf, kmer[1:mid+1]) <= 1 ):
-            mapK[key].remove((kmer, cov))
-    if len(mapK[key]) == 1:
-        uniqMapK[key] = mapK[key]
-
-print ("after filter mapK")
-'''
-def find_indel_pair_kmer(uniqKmers, kmerCov, uniqK_1mers, k, left_index, right_index, threshold): #, highRepeat):    
-    mid = int(k/2)
-    mapK = {}
-    for temp in uniqKmers:
-        leftHalf = temp[:mid]
-        rightHalf = temp[mid+1:] 
-        #if (tools.hamming_distance(rightHalf, temp[mid : -1 ] ) <= 2 or # mutation => delete 
-        #        tools.hamming_distance(leftHalf, temp[1:mid+1]) <= 2 ):
-        #    continue
-        if leftHalf.count(leftHalf[0]) >= mid-1 or rightHalf.count(rightHalf[0]) >= mid-1:
-            print (temp)
-            continue
-        key = leftHalf + rightHalf
-        if key not in mapK:
-            mapK[key] = []
-        mapK[key].append( temp )
-    print ( "uniq K-1 mer size", len(uniqK_1mers) )
-    indelPair = []
-    for key in uniqK_1mers:
-        if key in mapK and len( mapK[key] ) == 1:
-            kmer = mapK[key][0]
-            ek1, ek2, flag, group1, group2 = extend_one_pair(kmer, key, left_index, right_index,k, threshold)
-            if flag == False:
-                continue
-            indelPair.append( (kmer, key, ek1, ek2, kmerCov[kmer], uniqK_1mers[key]) )
-     
-    fout = open("indel_pair", "w")
-    sortedKmers = sorted(indelPair)
-    for (k1, k2, ek1, ek2, c1, c2) in sortedKmers:
-        fout.write("%s %s %s %s %s %s\n" % (k1, k2, ek1, ek2, c1, c2))
-    fout.close()       
-    return indelPair
-
-def update_map_merge(left_i, left_j, key1, key2, mapMerge):
-    
-    k1 = left_i
-    k2 = left_j
-    '''
-    if key2 < key1:
-        key1, key2 = key2, key1
-        k1, k2 = k2, k1
-        cov1, cov2 = cov2, cov1
-    if (key1, key2) not in mapMerge:
-        mapMerge[ (key1, key2) ] = []  
-    mapMerge[ (key1, key2) ].append( (k1, k2, cov1, cov2) )
-    '''
-    minkey1, minkey2 = tools.get_smaller_pair_kmer(key1, key2)
-    if (minkey1, minkey2) not in mapMerge:
-        mapMerge[ (minkey1, minkey2) ] = []   
-    Rk1, Rk2 = tools.reverse(k1), tools.reverse(k2)
-    if k1.count(minkey1) == 1 and k2.count(minkey2) == 1:
-        mapMerge[ (minkey1, minkey2) ].append( (k1, k2) )
-    elif k1.count(minkey2) == 1 and k2.count(minkey1) == 1: 
-        mapMerge[ (minkey1, minkey2) ].append( (k2, k1) )
-    elif Rk1.count(minkey1) == 1 and Rk2.count(minkey2) == 1:   
-        mapMerge[ (minkey1, minkey2) ].append( (Rk1, Rk2) )
-    elif Rk1.count(minkey2) == 1 and Rk2.count(minkey1) == 1:
-        mapMerge[ (minkey1, minkey2) ].append( (Rk2, Rk1) )
-    else:
-        print ("something wrong 1")
-        sys.exit()
-    
-    return     
-
 def build_map_merge(left, k):
     mapMerge= {}
     mid = int(k/2)
@@ -209,13 +109,11 @@ def build_map_merge(left, k):
                     #mappedKmer.add(k2)
                     #break #3 lines add 22 Aug. a kmer only allow one kmer hamming distance equal to 2
     
-    # for debug, can be deleted            
     highRepeat = set()
     for key in hisMap:
         if hisMap[key] > 2:
             highRepeat.add(key)
     print ("high Repeat kmer number", len(highRepeat) )
-    #fout.close()                
     return mapMerge, highRepeat
 
 def merge_pair(mapMerge, highRepeat, k, left_index, right_index, uniqKmers, kmerCov):
@@ -303,30 +201,6 @@ def find_non_pair_kmer(uniqKmer, kmerCov, k, left_index, right_index):
     
     return nonPair, highRepeat, leftKmer
 
-
-def build_left_right_kmer_index(uniqKmer):
-    
-    left_index , right_index = {}, {}
-    count = 0
-    for kmer in uniqKmer:
-        key = kmer[:-1]
-        if key not in left_index:
-            left_index[key] = list()
-        left_index[key].append(kmer[-1])
-        key = kmer[1:]
-        if key not in right_index:
-            right_index[key] = list()
-        right_index[key].append(kmer[0])
-
-    left_uniq_index , right_uniq_index = {}, {}
-    for key in left_index:
-        if len(left_index[key]) == 1:
-            left_uniq_index[key] = left_index[key]
-
-    for key in right_index:
-        if len(right_index[key]) == 1:
-            right_uniq_index[key] = right_index[key]
-    return left_uniq_index, right_uniq_index
 
 
 def extend_to_left(h1, left_index, right_index, k, group):
@@ -473,3 +347,4 @@ def check_unique_next(kmer, left_index, right_index):
         return True
 
     return False
+''' 

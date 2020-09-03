@@ -8,6 +8,7 @@
 
 import sys
 import os
+import logging
 #import subprocess
 
 m={}
@@ -16,11 +17,67 @@ m['T'] = 'A'
 m['C'] = 'G'
 m['G'] = 'C'
 
-def reverse(s): # AATC
+binTran={}
+binTran['A'] = '00'
+binTran['C'] = '01'
+binTran['G'] = '10'
+binTran['T'] = '11'
+
+m2={}
+m2['00'] = 'A'
+m2['01'] = 'C'
+m2['10'] = 'G'
+m2['11'] = 'T'
+
+RbinaryEle={}
+RbinaryEle['00'] = '11'
+RbinaryEle['01'] = '10'
+RbinaryEle['10'] = '01'
+RbinaryEle['11'] = '00'
+
+def transfer_kmer_int(s):
+    news=""
+    for ele in s:
+        news = news +  binTran[ele]  
+    val = int(news,2)
+    return val 
+
+def transfer_int_kmer(val, k):
+    s = bin(val)[2:].zfill(k*2)
+    #lenS = len(s)
+    return transfer_binary_string_2_kmer(s)   
+
+def transfer_binary_string_2_kmer(s): # no exact kmer, nucleotide string
+
+    kmer = ""
+    lenS = len(s)
+    for i in range(0, lenS, 2):
+        kmer += m2[s[i:i+2]]
+    return kmer
+def reverse(s): # AAGTC
     news = ""
     for ele in s:
-       news = m[ele] + news #CGATT
+        news = m[ele] + news #GACTT
     return news   
+
+def reverse_int(v, k):
+    s = bin(v)[2:].zfill(2*k)
+    news = reverse_binary_string(s)
+
+    return int(news, 2)
+
+def reverse_binary_string(s): #00 00 10 11 01
+   
+    news = ""
+    lenS = len(s)
+    if lenS %2 != 0:
+        print ("binary string %s isnot correct len: %s" % (s, lenS) )
+        logging.info("binary string %s isnot correct, len: %s " % (s, lenS) )
+        sys.exit()
+    for i in range(0, lenS, 2):
+        news = RbinaryEle[ s[i:i+2] ] + news #10 00 01  11 11
+    return news   
+
 
 def reverse_ward(ward):
     if ward == 'f':
@@ -30,6 +87,29 @@ def reverse_ward(ward):
     else:
         print ("reverse forward or backward error")
         sys.exit()
+
+        
+def calc_ATCG_zero_num(k1):
+    l=[]
+    l.append( k1.count('A') )
+    l.append( k1.count('C') )
+    l.append( k1.count('G') )
+    l.append( k1.count('T') )
+
+    return l.count(0)
+
+def calc_extendLen(meanCov, heteRate):
+    if heteRate >= 0.005:
+        return 2
+    else:
+        return 1
+
+def calc_weightThreshold(heteRate, k):
+    if heteRate >= 0.005:
+        return 4 #max( (k-1)/2 - heteRate-0.005, 4)
+    else:
+        return (k-3)/2
+
 
 '''
 s="ATCG"
@@ -88,6 +168,30 @@ def get_smaller_pair_kmer(kmer1, kmer2):
     if RKmer1 < kmer1:
         kmer1, kmer2 = RKmer1, RKmer2
     return kmer1, kmer2               
+
+def get_smaller_pair_int(v1, v2, k):
+   
+    Rv1 = reverse_int(v1, k)
+    Rv2 = reverse_int(v2, k)
+    if v2 < v1:
+        v1, v2 =v2, v1
+    if Rv2 < Rv1:
+        Rv1, Rv2 = Rv2, Rv1
+    if Rv1 < v1:
+        v1, v2 = Rv1, Rv2
+    return v1, v2               
+
+def get_smaller_pair_binary(v1, v2):
+   
+    Rv1 = reverse_binary_string(v1)
+    Rv2 = reverse_binary_string(v2)
+    if v2 < v1:
+        v1, v2 =v2, v1
+    if Rv2 < Rv1:
+        Rv1, Rv2 = Rv2, Rv1
+    if Rv1 < v1:
+        v1, v2 = Rv1, Rv2
+    return v1, v2               
 
 
 def count_mid_same(kmer):
