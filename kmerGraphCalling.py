@@ -74,7 +74,8 @@ time7 = time.clock()
 logging.info("number of components: %s" % nx.number_connected_components(G) )
 
 
-graphs = list(nx.connected_component_subgraphs(G))
+#graphs = list(nx.connected_component_subgraphs(G)) # <=2.3 networkx
+graphs = list(G.subgraph(c) for c in nx.connected_components(G))
 #---------------------------------------------------------------
 
 # for writing paper
@@ -151,7 +152,8 @@ nonSepOut = open(nonSepFile, "w")
 
 
 sSnpPair, sNonPair = sorted(snpPair), sorted(nonPair)
-for (ele1, ele2, w) in iter(sSnpPair):
+#for (ele1, ele2, w) in iter(sSnpPair):
+for (ele1, ele2, w) in iter(snpPair): # _pair.snp and _pair.snp.extend one correspond one
     snpOut.write("%s %s %s\n" % (ele1, ele2, w) )
 snpOut.close()
 

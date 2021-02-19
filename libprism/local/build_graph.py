@@ -16,7 +16,7 @@ import logging
 
 def snp_edges(m_index, k, left_index, right_index, extendKmers):   
 
-    edges = []        
+    edges = []
     print ("total number possible pair kmer", len(m_index))   
     count1 = 0
     mid = int(k/2)
@@ -172,7 +172,7 @@ def merge_pair(mapMerge, highRepeat, k, left_index, right_index, kmerCov, extend
                     continue
                 if covL2 > 1.5*covR2 or 1.5*covL2 < covR2:
                     continue
-                
+
                 if Right1[-l:] == Left1[:l] and Right2[-l:] == Left2[:l]:
                     merge1 = Right1 + Left1[l:] # this is binary string
                     merge2 = Right2 + Left2[l:]
@@ -374,9 +374,9 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
     temp1, add1 = extend_to_left(h1, left_index, right_index, k, group1)
     temp2, add2 = extend_to_left(h2, left_index, right_index, k, group2)
     minL = min ( len(add1), len(add2 ) )
+    
     #assert (minL <= 30)
-    #for i in range(1, minL+1, 2):
-        #if add1[0-i-2 : 0-i] == add2[0-i-2 : 0-i]:
+    
     add1, add2 = add1[-minL:], add2[-minL:] 
     for i in range(minL, 0, -2):
         if add1[i-2 : i] == add2[i-2 : i]:
@@ -384,10 +384,10 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
         else:
             break
     #assert supportPairL <= 15        
-    minTemp = min( len(temp1), len(temp2)  )
-    if minTemp % 2 != 0:
-        minTemp -= 1
-    temp1, temp2 = temp1[-minTemp:], temp2[-minTemp:]
+    
+    temp1, temp2 = temp1[-(supportPairL+k)*2:], temp2[-(supportPairL+k)*2:]
+
+    #print ("debug supportPairL, temp1, temp2", supportPairL, temp1, temp2)
     
     ekmer1, add1R = extend_to_right(temp1, left_index, right_index, k, group1)
     ekmer2, add2R = extend_to_right(temp2, left_index, right_index, k, group2) 
@@ -400,10 +400,10 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
         else:
             break
     #assert supportPairR <= 15
-    minTemp = min( len(ekmer1), len(ekmer2)  )
-    if minTemp % 2 != 0:
-        minTemp -= 1
-    ekmer1, ekmer2 = ekmer1[:minTemp], ekmer2[:minTemp]   
+    
+    ekmer1, ekmer2 = ekmer1[:(supportPairL+k+supportPairR)*2], ekmer2[:(supportPairL+k+supportPairR)*2]
+
+    #print ("debug binary string lens", len(ekmer1), len(ekmer2))
     ekmer1 = tools.transfer_binary_string_2_kmer(ekmer1)
     ekmer2 = tools.transfer_binary_string_2_kmer(ekmer2)
 
@@ -412,13 +412,15 @@ def extend_one_pair(h1, h2, left_index, right_index, k):
     #if min(minL, minR) <= threshold:
         #flag = False
 
-    if supportPairL > 15:
+    if supportPairL > int(k/2):
         print ("supportPairL", supportPairL, supportPairR)
         #sys.exit()
      
-    if supportPairR > 15:
+    if supportPairR > int(k/2):
         print ("supportPairR", supportPairL, supportPairR)
         #sys.exit()
+    
+    #print ("debug", len(ekmer1), len(ekmer2), supportPairL+supportPairR, flag)
     return ekmer1, ekmer2, supportPairL+supportPairR, flag
 
 '''
