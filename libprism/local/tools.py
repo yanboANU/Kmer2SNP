@@ -152,6 +152,15 @@ def hamming_distance2(s1, s2): # return pos
         if s1[i] != s2[i]:
             pos.append(i)
     return pos
+def get_smaller_kmer(kmer):
+
+    RKmer = reverse(kmer)
+    if kmer <= RKmer:
+        return kmer
+    else:
+        return RKmer
+
+
 def get_smaller_pair_kmer(kmer1, kmer2):
    
     lenKmer1 = len(kmer1)
