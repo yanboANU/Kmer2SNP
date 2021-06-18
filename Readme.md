@@ -29,7 +29,7 @@ See Kmer2SNP/example, k_31_pair.snp stores isolated SNP kmer pair, k_31_pair.non
 k_31_pair.non.sep puts one SNP in the middle position. 
 k_31_pair.non stores the result after merge two non-isolated SNP kmer pair. 
 
-# Example Usage
+# Example Usage (first version)
 
 <pre><code>  sh runkmercalling.sh 31 60 single_chr22_60x_data.fq  </code></pre>
 
@@ -41,4 +41,9 @@ For more than one fastq file
 Input fasta file
 <pre><code>  sh runkmercalling.sh 31 60 single_chr22_60x_data.fasta  </code></pre>
 
+# Example Usage (version > 1)
 
+<pre><code> python3 kmer2snp.py --k 31 --c 600 --fastaq example.fasta   </code></pre>
+
+To see more input parameters,
+<pre><code> python3 kmer2snp.py --help </code></pre>
