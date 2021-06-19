@@ -329,7 +329,7 @@ def get_nonIsolated_pair(faFile, mutations, realMNum, k):
 
 def write_isolated_snp_pair_kmer(snpPairKmer, k, preFilename):
 
-    snpFile = preFilename +  "_k_" + str(k) + "_pair.snp"
+    snpFile = preFilename +  "/k_" + str(k) + "_pair.snp"
 
     isol, nonSep, more = set(), set(), set()
     for (k1, k2, ID, pos) in snpPairKmer:
@@ -357,8 +357,8 @@ def write_isolated_snp_pair_kmer(snpPairKmer, k, preFilename):
 
 def write_nonIsolated_snp_pair_kmer(snpPairKmer, k, preFilename):
 
-    nonSepSnpFile = preFilename+ "_k_"+ str(k) + "_pair.non.sep"
-    moreFile = preFilename + "_k_" + str(k) + "_pair.more"
+    nonSepSnpFile = preFilename+ "/k_"+ str(k) + "_pair.non.sep"
+    moreFile = preFilename + "/k_" + str(k) + "_pair.more"
 
     #print ( "snp pair kmer:", len(snpPairKmer) )
     #print ( "set snp pair kmer:", len(set(snpPairKmer) ) ) 
@@ -395,8 +395,8 @@ def write_nonIsolated_snp_pair_kmer(snpPairKmer, k, preFilename):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
-        print ("ref.fa, kmer size, *.vcf")
+    if len(sys.argv) < 4:
+        print ("ref.fa, kmer size, *.vcf outputPath")
         sys.exit()
 
     faFile = sys.argv[1]
@@ -413,7 +413,8 @@ if __name__ == '__main__':
 
     t3 =time.time()
     print ("get isolated snp pair cost %s s" % (t3-t2))
-    prefilename = vcfFile.split('.')[0]
+    prefilename = sys.argv[4]   #+ vcfFile.split('.')[0]
+    print ("debug", prefilename)
     write_isolated_snp_pair_kmer(isolatedPairKmer, k, prefilename)
 
 

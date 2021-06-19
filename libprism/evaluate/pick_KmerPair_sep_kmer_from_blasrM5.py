@@ -17,10 +17,10 @@ def write_pair_kmer(outFile, kmers):
                 f.write("%s " % (e) )
             f.write("\n")    
 
-def write_sep_kmer(h1Kmers, h2Kmers , k):
+def write_sep_kmer(h1Kmers, h2Kmers , k, path):
 
-    fout1 = open("h1_" + str(k) + "mers" ,"w")
-    fout2 = open("h2_" + str(k) + "mers" ,"w")
+    fout1 = open(path + "/h1_" + str(k) + "mers" ,"w")
+    fout2 = open(path + "/h2_" + str(k) + "mers" ,"w")
     h1Kmers = sorted(h1Kmers.items())
     h2Kmers = sorted(h2Kmers.items())
     
@@ -77,7 +77,7 @@ def read_one_blasr_m5_line(line):
 if __name__ == '__main__':
     
     if len(sys.argv) < 2:
-        print ("ksize, *blasr.m5")
+        print ("ksize, *blasr.m5, outputPath")
         ##############
         #reference name must in chr1A_xxxx/1A_xxx and chr1B_xxx/1B_xxx format
         ########
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     k = int( sys.argv[1] )
     mid = int(k/2)
     filename = sys.argv[2]
-
+    path = sys.argv[3]
     kmers, nons, mores = [], [], []
     snpNumIn1kmer = {}
     mis, ins, dele = 0, 0, 0
@@ -140,10 +140,10 @@ if __name__ == '__main__':
                 i += 1    
 
     print ("snp number differ in one kmer", sorted(snpNumIn1kmer.items()))
-    write_pair_kmer("k_" + str(k)+"_pair.snp", kmers)
-    write_pair_kmer("k_" + str(k)+"_pair.non.sep", nons)
-    write_pair_kmer("k_" + str(k)+"_pair.more", mores)
-    write_sep_kmer(h1Kmers, h2Kmers , k)
+    write_pair_kmer( path + "/k_" + str(k)+"_pair.snp", kmers)
+    write_pair_kmer( path + "/k_" + str(k)+"_pair.non.sep", nons)
+    write_pair_kmer( path + "/k_" + str(k)+"_pair.more", mores)
+    write_sep_kmer(h1Kmers, h2Kmers , k, path)
 
 '''
 # remove this function
