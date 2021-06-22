@@ -43,7 +43,7 @@ Input fasta file
 
 # Example Usage (version > 1)
 
-<pre><code> python3 kmer2snp.py --k 31 --c 60 --fastaq example.fasta   </code></pre>
+<pre><code> python3 kmer2snp.py single --k 31 --c 60 --fastaq example.fasta   </code></pre>
 
 To see more input parameters,
-<pre><code> python3 kmer2snp.py --help </code></pre>
+<pre><code> python3 kmer2snp.py single --help </code></pre>
