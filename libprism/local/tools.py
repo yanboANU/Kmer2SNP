@@ -160,6 +160,18 @@ def get_smaller_kmer(kmer):
     else:
         return RKmer
 
+def get_smaller_pair_kmer_keep_order(k1, k2):
+    
+
+    Rk1 = reverse(k1)
+    Rk2 = reverse(k2)
+    if (Rk1 < k1 and Rk1 < k2) : # the mini is Rk1 or Rk2
+        k1,k2 = Rk1, Rk2    
+    if (Rk2 < k1 and Rk2 < k2) : # the mini is Rk1 or Rk2
+        k1,k2 = Rk1, Rk2
+    return k1, k2
+
+
 
 def get_smaller_pair_kmer(kmer1, kmer2):
    
@@ -246,3 +258,23 @@ def min_edit_distance(word1, word2):
             tmp[j+1] = value
     #print value
     return value
+
+
+def read_findGSE_result(filename):
+    
+    cnt = 0
+    with open(filename, "r") as f:
+        for line in f:
+            words = line.strip().split()
+            cnt += 1
+            if cnt == 1:
+                r = float(words[3])
+            if cnt == 2:
+                lowC = int(words[3])
+            if cnt == 3:
+                highC = int(words[3])
+
+    extendLen = calc_extendLen((lowC+highC)/2, r) 
+    lowC = lowC - extendLen
+    highC = highC + extendLen
+    return lowC, highC, r
