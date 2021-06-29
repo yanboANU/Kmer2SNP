@@ -15,6 +15,7 @@ from libprism.local import build_graph
 from libprism.local import kmercalling
 from libprism.local import tools
 from libprism.local import process
+from libprism.local import generate_VCF_without_reference
 
 def read_coverage(filename):
     covMap = {}
@@ -46,6 +47,8 @@ def run_population(args):
             #sys.exit()
             run_single(args.k, covMap[sampleID], faqFile, args.b)
 
+    os.chdir(prePath)
+    generate_VCF_without_reference.run(args.cfile)
     return
     
     
@@ -134,4 +137,4 @@ else:
     os.system('pwd')
     run_single(args.k, args.c, args.fastaq, 
             args.b, args.t1, args.c1, args.c2, args.r)
-
+    
