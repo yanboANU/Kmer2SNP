@@ -58,13 +58,13 @@ def run_population(args):
 def run_single(argsk, argsc, argsfastaq, argsb=1, argst1=None, argsc1=None, argsc2=None, argsr=None):
 
     if argst1 == None:
-        command="sh /home/yanbo/software/myVersionKmer2SNP/script/run_dsk.sh " + argsk + " " + argsc + " " + argsfastaq
+        command="sh " + os.path.dirname(os.path.realpath(__file__)) + "/script/run_dsk.sh " + argsk + " " + argsc + " " + argsfastaq
         print (command)
         os.system( command )
         argst1 = "chr_k" + argsk  + ".txt"
 
     if argsc1 == None or argsc2 == None or argsr == None:
-        command="sh /home/yanbo/software/myVersionKmer2SNP/script/run_findgse.sh " + argsk + " " + argsc + " " + argsfastaq
+        command="sh " + os.path.dirname(os.path.realpath(__file__)) + "/script/run_findgse.sh " + argsk + " " + argsc + " " + argsfastaq
         print (command)
         os.system( command )
         c1, c2, r = tools.read_findGSE_result("hete.para") 
@@ -91,13 +91,13 @@ sample_parsers = parser.add_subparsers(title="sample_mode")
 parser_single = sample_parsers.add_parser('single')
 parser_single.add_argument('--k', help='kmer size', required=True)
 parser_single.add_argument('--c', help='homozygous coverage', required=True)
-parser_single.add_argument('--fastaq', help='NGS reads in fasta or fastq format, either gziped or not. To pass several files as input, separate file names by a comma (",") ', required=True)
+parser_single.add_argument('--fastaq', help='NGS reads in fasta or fastq format, gzipped acceptable. Separate multiple file paths by a comma (",") ', required=True)
 parser_single.add_argument('--output_dir', help='output directory (Default is ./)', required=False)
-parser_single.add_argument('--b', help='b=0 only call isolated SNV (only one snv in a k-mer), b=1 call at most 2 SNVs in a k-mer (Default b = 1)', required=False)
-parser_single.add_argument('--t1', help='kmer freq txt file (Default is DSK result)', required=False)
-parser_single.add_argument('--c1', help='low coverage (Default is FindGSE result)', required=False)
-parser_single.add_argument('--c2', help='high coverage (Default is FindGSE result)', required=False)
-parser_single.add_argument('--r', help='heterozygous rate (Default is FindGSE result)', required=False)
+parser_single.add_argument('--b', help='b=0 call only isolated SNP (one SNP in a k-mer), b=1 call at most 2 SNPs in a k-mer (default b = 1)', required=False)
+parser_single.add_argument('--t1', help='kmer frequency txt file (Default is DSK result)', required=False)
+parser_single.add_argument('--c1', help='low coverage threshold (default: FindGSE result)', required=False)
+parser_single.add_argument('--c2', help='high coverage threshold (default: FindGSE result)', required=False)
+parser_single.add_argument('--r', help='heterozygous rate (default: FindGSE result)', required=False)
 parser_single.set_defaults(which='single')
 
 
