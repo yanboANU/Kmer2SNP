@@ -63,6 +63,19 @@ def read_hete_kmer(filename, sampleID):
     return sorted(kmerID) 
 
 
+def read_edgeWeight(filename):
+    ew = {} #edge weight
+    with open(filename, "r") as f:
+        for line in f:
+            words = line.split()
+            k1 = words[0]
+            k2 = words[1]
+            weight = words[2]
+            #assert k1 < k2
+            ew[(k1,k2)] = weight
+    return ew
+
+
 def compare_two_lists(list2, list4):
 
     res=[]
@@ -92,31 +105,37 @@ def compare_two_lists(list2, list4):
 
     return sorted(res)
 
-def generate_high_kmer(res, sampleID, vcfMap, prefix):
+def generate_high_kmer(res, sampleID, vcfMap, prefix, edgeWeight):
     
     kmers =set()
+    kLen = len(res[0][1])
+    mid = int(kLen/2)
     for i in range(0, len(res), 2):
         ID1, kmer1, cnt1 = res[i]
         ID2, kmer2, cnt2 = res[i+1]
         if kmer1 > kmer2:
             ID1, kmer1, cnt1 = res[i+1]
             ID2, kmer2, cnt2 = res[i]
- 
+  
         if ID1.startswith(sampleID):
-            key = kmer1+"/"+kmer2
+            #key = kmer1+"/"+kmer2
+            w = edgeWeight[ (kmer1, kmer2) ]
+            allele1, allele2  = kmer1[ mid ], kmer2[ mid ] 
+            key = kmer1[ : mid ] + '[' + allele1 + "/" + allele2 + ']' + kmer1[mid+1 : ]
             if key not in vcfMap:
                 vcfMap[key] = prefix
-            vcfMap[key] = vcfMap[key] + "GT=1:AD=" + str(cnt1) +","+ str(cnt2) + ";"
+            #GT:AD:EW (edge weight)      
+            vcfMap[key] = vcfMap[key] + "0/1:" + str(cnt1) +","+ str(cnt2) + ":"+ w +";"
             kmers.add(kmer1)
             kmers.add(kmer2)
           
-    return kmers
+    return kmers, mid
 
 
-def generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix):
+def generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix, ew):
     
 
-    kmers = generate_high_kmer(res, sampleID, vcfMap, prefix)
+    kmers, mid = generate_high_kmer(res, sampleID, vcfMap, prefix, ew)
     heteCov = homoCov/2
     
     for i in range(0, len(res), 2):
@@ -127,98 +146,35 @@ def generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix):
             ID1, kmer1, cnt1 = res[i+1]
             ID2, kmer2, cnt2 = res[i]
 
-        if cnt1 == 0 and cnt2 == 0:
+        if cnt1 + cnt2 <=5:
             continue
-        if kmer1 not in kmers and kmer2 not in kmers:
-            if (cnt1==0 and cnt2 >5) or (cnt2 > heteCov*1.6 and cnt1 < 5):
-                
-                key = kmer1+"/"+kmer2
+        allele1, allele2  = kmer1[ mid ], kmer2[ mid ] 
+        key = kmer1[ : mid ] + '[' + allele1 + "/" + allele2 + ']' + kmer1[mid+1 : ]
+        if kmer1 not in kmers and kmer2 not in kmers: 
+            if ( cnt1/(cnt1+cnt2) > 0.95 ):    
                 if key not in vcfMap:
                     vcfMap[key] = prefix
-                vcfMap[key] = vcfMap[key] + "GT=0:AD=" +str(cnt1) +","+str(cnt2) + ";"
+                vcfMap[key] = vcfMap[key] + "0/0:" +str(cnt1) +","+str(cnt2) + ":-1;"
+                kmers.add(kmer1)
+                kmers.add(kmer2)
                 continue
-
-            elif (cnt2==0 and cnt1 >5) or (cnt1 > heteCov*1.6 and cnt2 < 5): 
-                key = kmer1+"/"+kmer2
+            elif ( cnt2/(cnt1+cnt2) > 0.95 ): 
                 if key not in vcfMap:
                     vcfMap[key] = prefix
-                vcfMap[key] = vcfMap[key] + "GT=0:AD=" + str(cnt1) +","+ str(cnt2) + ";"     
+                vcfMap[key] = vcfMap[key] + "1/1:" + str(cnt1) +","+ str(cnt2) + ":-1;"    
+                kmers.add(kmer1)
+                kmers.add(kmer2)
                 continue
             elif (cnt1 > 2 and cnt2 > 2):
-                key = kmer1+"/"+kmer2
                 if key not in vcfMap:
                     vcfMap[key] = prefix
-                vcfMap[key] = vcfMap[key] + "GT=1:AD=" + str(cnt1) +","+ str(cnt2) + ";"     
+                vcfMap[key] = vcfMap[key] + "0/1:" + str(cnt1) +","+ str(cnt2) + ":-1;"    
+                kmers.add(kmer1)
+                kmers.add(kmer2)
                 continue
             else:
                 print (ID1, ID2, kmer1, kmer2, cnt1, cnt2)
 
-    return
-
-
-
-
-
-
-def write_fastq(res, sampleID, homoCov, filename):
-    
-
-    kmers, records = write_hete_kmer(res, sampleID)
-    if len(kmers) == 0:
-        return 
-    heteCov = homoCov/2
-    index = int( (len(kmers)/2) + 1)
-    for i in range(0, len(res), 2):
-        ID1, kmer1, cnt1 = res[i]
-        ID2, kmer2, cnt2 = res[i+1]
-        if cnt1 == 0 and cnt2 == 0:
-            continue
-        if kmer1 not in kmers and kmer2 not in kmers:
-            #if cnt1 < cnt2 and cnt1 < 5 and (cnt2 > heteCov*1.6 or (cnt1==0 and cnt2 >heteCov*1.2) ):
-            if (cnt1==0 and cnt2 >5) or (cnt2 > heteCov*1.6 and cnt1 < 5):
-                ID1 = sampleID + ":" + str(index) + ":homo:0:" + str(cnt2) +":1"
-                ID2 = sampleID + ":" + str(index) + ":homo:0:" + str(cnt2) +":2"
-                r0 = SeqRecord( Seq(kmer2) , id= ID1 )
-                r0.letter_annotations["phred_quality"] = [43]*len(kmer2)
-                r1 = SeqRecord( Seq(kmer2) , id= ID2 )
-                r1.letter_annotations["phred_quality"] = [43]*len(kmer2)
-                records.append(r0)
-                records.append(r1) 
-                kmers.add(kmer2)
-                index += 1
-                continue
-            #elif cnt1 > cnt2 and cnt2 < 5 and ( cnt1 >heteCov*1.6 or (cnt2==0 and cnt1 >heteCov*1.2) ) :
-            elif (cnt2==0 and cnt1 >5) or (cnt1 > heteCov*1.6 and cnt2 < 5): 
-                ID1 = sampleID + ":" + str(index) + ":homo:0:" + str(cnt1) +":1"
-                ID2 = sampleID + ":" + str(index) + ":homo:0:" + str(cnt1) +":2"
-                r0 = SeqRecord( Seq(kmer1) , id= ID1 )
-                r0.letter_annotations["phred_quality"] = [43]*len(kmer1)
-                r1 = SeqRecord( Seq(kmer1) , id= ID2 )
-                r1.letter_annotations["phred_quality"] = [43]*len(kmer1)
-                records.append(r0)
-                records.append(r1)
-                kmers.add(kmer1)
-                index += 1
-                continue
-            #elif cnt1 > heteCov*0.6 and cnt1 < heteCov*1.2 and cnt2 > heteCov*0.6 and cnt1 < heteCov*1.2:
-            elif (cnt1 > 2 and cnt2 > 2):
-                ID1 = sampleID + ":" + str(index) + ":het_other:0:"+ str(cnt1) + ID1[-2:]
-                ID2 = sampleID + ":" + str(index) + ":het_other:0:"+ str(cnt2) + ID2[-2:]
-                r0 = SeqRecord( Seq(kmer1) , id= ID1 )
-                r0.letter_annotations["phred_quality"] = [43]*len(kmer1)
-                r1 = SeqRecord( Seq(kmer2) , id= ID2 )
-                r1.letter_annotations["phred_quality"] = [43]*len(kmer2)
-                records.append(r0)
-                records.append(r1)
-                kmers.add(kmer1)
-                kmers.add(kmer2)
-                index += 1
-                continue
-            else:
-                print (ID1, ID2, kmer1, kmer2, cnt1, cnt2)
-
-    print ("total kmer number", len(records))        
-    SeqIO.write(records, filename, "fastq")
     return
 
 def read_coverage(filename):
@@ -231,6 +187,19 @@ def read_coverage(filename):
             covMap[sampleID] = cov         
     return covMap
 
+def check_vcfMap(vcfMap, cnt):
+
+    for key in vcfMap:
+        if vcfMap[key].count(';') == cnt:
+            continue
+        elif vcfMap[key].count(';') == cnt-1:
+            vcfMap[key] = vcfMap[key] + "-;"
+            continue
+        else:
+            print ("error in vcfMap")
+    return        
+
+
 def run(filename):
 
     covMap = read_coverage(filename)
@@ -238,19 +207,23 @@ def run(filename):
     for sampleID in covMap:
         temp = read_hete_kmer(sampleID + "/k_31_pair.snp", sampleID)
         kmerID.extend( temp )
-    kmerID = sorted(kmerID) 
+    kmerID = sorted(kmerID) # have repeat kmer, different ID 
     vcfMap = {}
     prefix = ""
+    sampleCnt = 0
     for sampleID in covMap:
+        
+        edgeWeight = read_edgeWeight(sampleID + "/k_31_pair.snp")
         filename = sampleID + "/chr_k31.txt"
         kmerFreq =  read_kmer_freq(filename)
         homoCov = covMap[ sampleID] 
         res = compare_two_lists(kmerID, kmerFreq)
         #print (res)
-        generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix)
+        generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix, edgeWeight)
+        sampleCnt += 1
+        if sampleCnt > 2:
+            check_vcfMap(vcfMap, sampleCnt)
         prefix = prefix + "-;"
-
-        #write_fastq(res, sampleID, homoCov, sampleID + "_kmerPair.fastq")
 
     fout = open("all_samples.vcf", "w")
     fout.write("kmer\t")
@@ -267,43 +240,14 @@ def run(filename):
 
     fout.close()    
 
-
+'''
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print ("covList")
         sys.exit()
    
-    covMap = read_coverage(sys.argv[1])
-    kmerID = []
-    for sampleID in covMap:
-        temp = read_hete_kmer(sampleID + "/k_31_pair.snp", sampleID)
-        kmerID.extend( temp )
-    kmerID = sorted(kmerID) 
-    vcfMap = {}
-    prefix = ""
-    for sampleID in covMap:
-        filename = sampleID + "/chr_k31.txt"
-        kmerFreq =  read_kmer_freq(filename)
-        homoCov = covMap[ sampleID] 
-        res = compare_two_lists(kmerID, kmerFreq)
-        #print (res)
-        generate_vcfMap(res, sampleID, homoCov, vcfMap, prefix)
-        prefix = prefix + "-;"
+    run(sys.argv[1])
+'''    
 
-        #write_fastq(res, sampleID, homoCov, sampleID + "_kmerPair.fastq")
 
-    fout = open("all_samples.vcf", "w")
-    fout.write("kmer\t")
-    for sampleID in covMap:
-        fout.write("%s\t" % (sampleID))
-    fout.write("\n")
-    for key in vcfMap:
-        print (key, vcfMap[key])
-        fout.write("%s\t" % key)
-        words = vcfMap[key][:-1].split(";")
-        for w in words:
-            fout.write("%s\t" % (w))
-        fout.write("\n")
-
-    fout.close()    
